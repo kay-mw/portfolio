@@ -13,7 +13,7 @@ This project investigated the winner and loser effect, which refers to the pheno
 
 ### Data Sourcing
 
-After defining the goals mentioned above, I searched for an API that would contain the relevant data. I used an API called Pandascore, which allowed me to gather large amoubnts of past eSports game data for multiple different videogame titles.
+After defining the problems, I searched for an API that would contain the relevant data. I used an API called Pandascore, which allowed me to gather large amoubnts of past eSports game data for multiple different videogame titles.
 
 Using [this code](code/CSGO_API_request_final.py), the API returned 48459 rows and 134 columns.
 
