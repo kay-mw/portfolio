@@ -16,3 +16,8 @@ This project investigated the winner and loser effect, which refers to the pheno
 After defining the goals mentioned above, I searched for an API that would contain the relevant data. I used an API called Pandascore, which allowed me to gather large amoubnts of past eSports game data for multiple different videogame titles.
 
 Using [this code](code/CSGO_API_request_final.py), the API returned 48459 rows and 134 columns.
+
+### References
+
+Franz, M., McLean, E., Tung, J., Altmann, J., & Alberts, S. C. (2015). Self-organizing dominance hierarchies in a wild primate population. Proceedings of the Royal Society B: Biological Sciences, 282(1814), 20151512. https://doi.org/10.1098/rspb.2015.1512
+Page, L., & Coates, J. (2017). Winner and loser effects in human competitions. Evidence from equally matched tennis players. Evolution and Human Behavior, 38(4), 530-535. https://doi.org/10.1016/j.evolhumbehav.2017.02.003
