@@ -1,4 +1,4 @@
-# Data Projects
+# Projects
 
 ## Project 1: Dissertation - The Impact of Winner and Loser Effects on eSports Competitions
 
