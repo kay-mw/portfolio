@@ -8,7 +8,7 @@ This project investigated the winner and loser effect, which refers to the pheno
 
 ### Problem Statement
 
-- Does the winner/loser effect persist in a largely psychological competition like eSports?
+- Does the winner/loser effect persist in a largely psychological competitions like eSports?
 - Could factors such as tournmanet prize money, tournament tier and bracket stage mediate the effect of wins and losses on performance?
 
 ### Data Sourcing
