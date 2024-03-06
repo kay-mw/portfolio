@@ -1,4 +1,6 @@
-## Project 1: Anilist Popularity Project
+# KM Portfolio
+
+# Project 1: Anilist Popularity Project
 
 [Project Repo](https://github.com/kay-mw/anilist-popularity-project)
 
@@ -274,7 +276,7 @@ With this, the project was complete! I had a lot of fun making it, and I may con
 
 Thank you for reading, and feel free to try the pipeline out yourself!
 
-## Project 2: The Impact of Winner and Loser Effects on eSports Competitions (Dissertation)
+# Project 2: The Impact of Winner and Loser Effects on eSports Competitions (Dissertation)
 
 ## Introduction
 
