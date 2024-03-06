@@ -4,20 +4,20 @@
 
 ### Project Overview
 
-[AniList](https://anilist.co) is a website that allows users to catalogue, score, and discuss the anime they have watched. The website is run using the [AniList GraphQL API](https://anilist.gitbook.io/anilist-apiv2-docs/), which is publicly available for use. As a user of AniList myself, I wanted to see if I could use this API to extract unique user insights. I wanted to create an ETL pipeline that could calculate a users most "popular" and "unpopular" anime take, and display the results to them on a basic web interface. This approach was inspired by [Obscurify](https://www.obscurifymusic.com), a website that uses the Spotify API to identify how popular your music taste is based on the obscurity of songs you listen to. 
+[AniList](https://anilist.co) is a website that allows users to catalog, score, and discuss the anime they have watched. The website is run using the [AniList GraphQL API](https://anilist.gitbook.io/anilist-apiv2-docs/), which is publicly available for use. As an AniList user myself, I wanted to see if I could use this API to extract unique user insights. The goal was to create an ETL (Extract, Transform, Load) pipeline that could calculate a user's most "popular" and "unpopular" anime takes, and display the results to them on a basic web interface. This approach was inspired by [Obscurify](https://www.obscurifymusic.com), a website that uses the Spotify API to identify how popular your music taste is based on the obscurity of the songs you listen to.
 
 #### Basic Outline
 
-1. Create a python script that could extract user anime data as well as the site-wide data for those anime from the Anilist API.
-2. Transform this data into a usable format and perform basic analysis to identify the users most "popular" and "unpoplular" anime opinions.
+1. Create a Python script that could extract user anime data and site-wide data for those anime from the AniList API.
+2. Transform this data into a usable format and perform basic analysis to identify the user's most "popular" and "unpopular" anime opinions.
 3. Upload the data to a cloud SQL database (in this case, Azure).
 4. Create a basic web interface to facilitate this pipeline, including a page where users could enter their ID, and a dashboard page that displays their results.
 
 ### Step 1: Extract
 
-As is the case with most data engineering projects, the first step is to figure out how to extract the data you need. Prior to this project I had never worked with a GraphQL API before, so the first step was understanding the basics of GraphQL queries, namely the syntax, variables, and navigating the JSON structure. The AniList API [documentation](https://anilist.gitbook.io/anilist-apiv2-docs/overview/graphql/getting-started) was very helpful in this regard.
+The first step was to figure out how to extract the required data. Prior to this project, I had never worked with a GraphQL API before, so the first step was understanding the basics of GraphQL queries, namely the syntax, variables, and navigating the JSON structure. The AniList API [documentation](https://anilist.gitbook.io/anilist-apiv2-docs/overview/graphql/getting-started) was very helpful in this regard.
 
-I then constructed my first GraphQL (GQL) query. 
+I then constructed my first GraphQL (GQL) query:
 ```
 query ($page: Int, $id: Int!) {
   Page (page: $page) {
@@ -43,7 +43,7 @@ query ($page: Int, $id: Int!) {
   }
 }
 ```
-This would successfully retrieve the ID and score of each anime on a user's profile. Initially, I pasted these queries in full into my python file, but I later set up a basic function that would load the queries so I could store them as separate .gql files.
+This would successfully retrieve the ID and score of each anime on a user's profile. Initially, I pasted these queries in full into my Python file, but I later set up a basic function that would load the queries so I could store them as separate .gql files.
 ```
 def load_query(file_name):
     file_path = os.path.join("./", file_name)
@@ -67,7 +67,7 @@ def fetch_anilist_data(query, variables):
         print(f"Error in request: {e}")
         return None
 ```
-This was simple enough to extract user data, but as anime data contained more information per page, I would need to utilise pagination with a basic while loop.
+This was simple enough to extract user data, but as anime data contained more information per page, I would need to utilize pagination with a basic while loop.
 ```
 while True:
     response_ids = fetch_anilist_data(query_anime, variables_anime)
@@ -82,7 +82,7 @@ while True:
 
     variables_anime['page'] += 1
 ```
-Importantly, by creating a list of anime IDs from the original user query and setting that as a variable, I would extract only the animes I needed for that user.
+Importantly, by creating a list of anime IDs from the original user query and setting that as a variable, I would extract only the anime I needed for that user.
 ```
 id_list = user_score['anime_id'].values.tolist()
 
@@ -95,12 +95,13 @@ With this, I had extracted all the data I needed - now I had to make the respons
 
 ### Step 2: Transform
 
-Upon constructing the GQL queries I needed, I now went to extract the relevant information from the JSON response. To extract the data from JSON and put it in a dataframe I used `pd.json_normalize`. I then performed any extra transformations depending on what the output looked like. For user data, I had to pivot the data from wide to long using `pd.explode`. I also renamed all the columns to keep the naming template consistent. 
+Upon constructing the necessary GQL queries, I proceeded to extract the relevant information from the JSON response. To extract the data from JSON and put it in a data frame, I used `pd.json_normalize`. I then performed any additional transformations depending on the output format. For user data, I had to pivot the data from wide to long using `pd.explode`. I also renamed all the columns to maintain a consistent naming template.
 
 ### Step 3: Load
 
 #### Terraform Deployment
-As I had never used the Azure Cloud Platform before, I wanted to try it out for this project. After initialising my credentials using the Azure CLI, I set up the infrastructure using terraform.
+
+As I had never used the Azure Cloud Platform before, I wanted to try it out for this project. After initializing my credentials using the Azure CLI, I set up the infrastructure using Terraform.
 ```
 terraform {
   required_providers {
@@ -148,17 +149,17 @@ resource "azurerm_mssql_database" "anilist-db" {
   max_size_gb    = 4
 }
 ```
-This made setting everything up super easy. 
+This made setting everything up super easy.
 
 #### Data Warehouse Model
 
-I then spent a while trying to figure out the data warehouse structure I wanted to use. I eventually decided upon creating 3 separate tables, one containing the user's individual score data ("user_score"), one containing site-wide anime data ("anime_info"), and another containing user/request data ("user_info"). 
+I then spent some time trying to figure out the data warehouse structure I wanted to use. I eventually decided upon creating three separate tables: one containing the user's individual score data ("user_score"), one containing site-wide anime data ("anime_info"), and another containing user/request data ("user_info").
 
-I chose this structure because it allows for a clear identification of keys. anime_id is the primary key in "anime_info", user_id is the primary key in "user_info", and these then act as foreign keys to access the data in "user_score". I felt this made the relationships between the tables clear and intuitive, and made it simple to use joins if you wanted to access all of the data with one query.  
+I chose this structure because it allows for clear identification of keys. anime_id is the primary key in "anime_info", user_id is the primary key in "user_info", and these then act as foreign keys to access the data in "user_score". I felt this made the relationships between the tables clear and intuitive, and made it simple to use joins if you wanted to access all of the data with one query. 
 
 #### Data Upload
 
-I attempted a few different iterations of data uploads. I found the built in `df.to_sql` function limiting for my use case, as I wanted to replace existing data as well as append new data, which was difficult with pandas functionality. I eventually decided upon using SQL alchemy to create a temporary table, which would then be used as a source to perform a merge on the existing data.
+I attempted a few different methods of uploading data. I found the built-in `df.to_sql` function limiting for my use case, as I wanted to replace existing data as well as append new data, which was difficult with pandas functionality. I eventually decided upon using SQLAlchemy to create a temporary table, which would then be used as a source to perform a merge on the existing data.
 ```
 server = "anilist-sqlserver.database.windows.net"
 database = "anilist-db"
@@ -192,15 +193,15 @@ upload_table("anime_id", "anime_info", anime_info, "average_score", "title_romaj
 upload_table("anime_id", "user_score", user_score, "user_id", "user_score")
 upload_table("user_id", "user_info", user_info, "user_name", "request_date")
 ```
-This worked perfectly - it allowed me to replace existing data to keep entries up to date, whilst appending any new data. This allowed it to keep all the information as up to date as possible, whilst allowing new users or profile updates to be appended to the table.
+This worked well - it allowed me to replace existing data to keep entries up-to-date, while appending any new data. This enabled the system to keep all the information as current as possible, while allowing new users or profile updates to be appended to the table.
 
 ### Step 4: Web App
 
-With this, the data engineering side of this project was essentially finished! Now I just wanted to make a basic web interface, both just for the fun of it and also to make this project feel more complete.
+With this, the data engineering side of this project was essentially finished! Now I wanted to create a basic web interface, both for fun and to make this project feel more complete.
 
 #### Flask + Jinja2
 
-I set up a basic HTML website and flask backend that allowed a user to enter their Anilist ID, stored the post request, and then sent this as an argument to the API request python module (which I had to wrap inside the `fetch_data(anilist_id)` function).
+I set up a basic HTML website and Flask backend that allowed a user to enter their AniList ID, stored the POST request, and then sent this as an argument to the API request Python module (which I had to wrap inside the `fetch_data(anilist_id)` function).
 ```
 app = Flask(__name__)
 
@@ -240,7 +241,7 @@ def dashboard():
 if __name__ == '__main__':
     app.run(host='0.0.0.0', debug=True)
 ```
-I also used Jinja2 to insert variables from the API request file into the HTML file, which was primarily used to dynamically display the users results.
+I also used Jinja2 to insert variables from the API request file into the HTML file, which was primarily used to dynamically display the user's results.
 ```
 <div class="image-wrapper">
     <h2>Your Most Unpopular Take</h2>
@@ -263,7 +264,7 @@ I also used Jinja2 to insert variables from the API request file into the HTML f
     </p>
 </div>
 ```
-Thanks to PicoCSS for styling, I think the website ended up looking pretty decent for my first ever website. Ok at least the home page, maybe not the dashboard...
+Thanks to PicoCSS for styling, I think the website ended up looking pretty decent for my first-ever website. Okay, at least the home page, maybe not the dashboard...
 
 ![home page](./images/firefox_4DIEhq58Ry.png)
 
@@ -271,7 +272,7 @@ Thanks to PicoCSS for styling, I think the website ended up looking pretty decen
 
 With this, the project was complete! I had a lot of fun making it, and I may continue working on it since it has even more potential. It would be great if I could get it to the same level as Obscurify one day.
 
-Thank you for reading and feel free to try the pipeline out yourself!
+Thank you for reading, and feel free to try the pipeline out yourself!
 
 ## Project 2: The Impact of Winner and Loser Effects on eSports Competitions (Dissertation)
 
