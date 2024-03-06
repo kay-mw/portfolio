@@ -4,3 +4,4 @@ plugins:
 google_analytics: ${{ secret.GOOGLE_ANALYTICS_TAG }}
 show_downloads: true
 title: [Kiran Malhotra]
+description: [Personal portfolio.]
