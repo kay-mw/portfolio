@@ -1,4 +1,4 @@
-# KM Portfolio
+# Kiran Malhotra - Portfolio
 
 # Project 1: Anilist Popularity Project
 
