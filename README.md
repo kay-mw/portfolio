@@ -2,7 +2,7 @@
 
 # Project 1: Anilist Popularity Project
 
-[Project Repo](https://github.com/kay-mw/anilist-popularity-project)
+[REPO](https://github.com/kay-mw/anilist-popularity-project)
 
 ### Project Overview
 
