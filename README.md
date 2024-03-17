@@ -290,7 +290,7 @@ This project was an analytical investigation into the winner and loser effect, a
 
 ## Step 1: Extract
 
-First, I searched for an API that would contain the relevant data. I used an API called [Pandascore](https://pandascore.co/), which allowed me to gather large amounts of esports game data from multiple different videogame titles.
+First, I searched for an API that would contain the relevant data. I used an API called [Pandascore](https://pandascore.co/), which allowed me to gather large amounts of esports game data for CS:GO.
 ```
 import requests
 from dotenv import load_dotenv
@@ -301,7 +301,7 @@ load_dotenv()
 
 headers = {
     "accept": "application/json",
-    "authorization": f"Bearer {os.environ[API_KEY]}"
+    "authorization": f"Bearer {os.environ['API_KEY']}"
 }
 
 response = []
@@ -340,4 +340,4 @@ print(df)
 
 df.to_csv('csgo_data_game_filtered.csv')
 ```
-
+This returned a dataset containing 49,421 CS:GO matches from January 2016 to October 2023.
