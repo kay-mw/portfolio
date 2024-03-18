@@ -272,20 +272,26 @@ Thanks to PicoCSS for styling, I think the website ended up looking pretty decen
 
 ![dashboard](./images/g7GNO07zZA.png)
 
+### Conclusion
+
 With this, the project was complete! I had a lot of fun making it, and I may continue working on it since it has even more potential. It would be great if I could get it to the same level as Obscurify one day.
 
 Thank you for reading, and feel free to try the pipeline out yourself!
 
 # Project 2: The Impact of Winner and Loser Effects on eSports Competitions (Dissertation)
 
+[REPO](https://github.com/kay-mw/esports_wleffects)
+
 ## Project Overview
 
-This project was an analytical investigation into the winner and loser effect, a phenomenon wherein winning a previous competition, in of itself, appears to increase the likelihood of winning the current competition. The focus of the project was on esport competitions, specifically CS:GO matches, which was novel since most existing literature on winner/loser effects investigated animals, not humans. Though this project was more data analysis focused, it does still follow a general ETL structure like you would see in a data engineering context. At some point I will make this a batch pipeline using an orchestration tool that automates the API requests at regular intervals.
+This project was an analytical investigation into the winner and loser effect, a phenomenon where winning a previous competition appears to, in of itself, increase the likelihood of winning the current competition. The focus was on esport competitions, specifically the first person shooter (FPS) Counter:Strike Global Offensive (CS:GO). This was a novel approach given that most existing literature on winner/loser effects investigated animals or humans in physical competitions (judo, tennis). Though the project was more data analysis-focused, it followed a general ETL (Extract, Transform, Load) structure similar to a data engineering context. The goal was to create a batch pipeline using an orchestration tool that automates the API requests at regular intervals.
+
+I collaborated with my dissertation supervisor, who contributed significantly to the complex code for data analysis (e.g., calculating previous outcomes for each team). My primary responsibilities were data extraction and transformation.
 
 ### Basic Outline
 
 - Extract esports data from an API.
-- Transform the data into a usable format for data analysis.
+- Transform the data into a usable format for analysis.
 - Use a general linear mixed effects model to see if, when controlling for team skill, winning/losing the previous game significantly predicts the outcome of the current game.
 
 ## Step 1: Extract
@@ -340,4 +346,167 @@ print(df)
 
 df.to_csv('csgo_data_game_filtered.csv')
 ```
-This returned a dataset containing 49,421 CS:GO matches from January 2016 to October 2023.
+This returned a dataset containing 49,421 CS:GO matches from January 2016 to October 2023. This was the bulk of the data extraction work done, though the processing/transformation stage would require two more datasets.
+
+## Step 2: Transform
+
+### Exchange Rates
+
+The first additional dataset needed was a historical exchange rates dataset, to tackle the issue of the CS:GO dataset having prize money amounts in over 30 different currencies. I decided on a dataset from the Bank for International Settlements (BIS) called "bilateral exchange rates," which contained conversion rates for hundreds of different currencies across a broad range of dates, all relative to the United States Dollar (USD). 
+
+First, I converted all the currency names in the esports dataset into their relevant currency codes. The currency codes could then act as the key to connect the two datasets.
+```
+# separate prize pool amount and currency
+esport.data <- separate(esport.data, tournament.prizepool, into = c(
+  "tournament.prizepool.amount", "tournament.prizepool.currency"
+  ), sep = "\\s", extra = "merge")
+
+# convert prize pool amount column to int datatype
+esport.data <- esport.data %>% mutate(across(tournament.prizepool.amount, as.integer))
+
+# identify if separation worked as intended
+unique(esport.data$tournament.prizepool.currency)
+
+# saw that some values of United States Dollar had extra white space, so trim is necessary
+esport.data$tournament.prizepool.currency <- trimws(esport.data$tournament.prizepool.currency)
+
+# convert currency string to relevant abbreviation
+esport.data <- esport.data %>%
+  mutate(tournament.prizepool.currencycode = case_when(
+    tournament.prizepool.currency == "United States Dollar" ~ "USD",
+    tournament.prizepool.currency == "Chinese Yuan" ~ "CNY",
+    tournament.prizepool.currency == "Euro" ~ "EUR",
+    tournament.prizepool.currency == "Brazilian Real" ~ "BRL",
+    tournament.prizepool.currency == "Polish Zloty" ~ "PLN",
+    tournament.prizepool.currency == "Indian Rupee" ~ "INR",
+    tournament.prizepool.currency == "Swedish Krona" ~ "SEK",
+    tournament.prizepool.currency == "British Pound"  ~ "GBP",
+    tournament.prizepool.currency == "Kazakhstani Tenge" ~ "KZT",
+    tournament.prizepool.currency == "Russian Ruble" ~ "RUB",
+    tournament.prizepool.currency == "Argentine Peso" ~ "ARS",
+    tournament.prizepool.currency == "Norwegian Krone" ~ "NOK",
+    tournament.prizepool.currency == "Danish Krone" ~ "DKK",
+    tournament.prizepool.currency == "Czech Koruna" ~ "CZK",
+    tournament.prizepool.currency == "Australian Dollar" ~ "AUD",
+    tournament.prizepool.currency == "Swiss Franc" ~ "CHF",
+    tournament.prizepool.currency == "Turkish Lira" ~ "TRY",
+    tournament.prizepool.currency == "Japanese Yen" ~ "JPY",
+    tournament.prizepool.currency == "Croatian Kuna"  ~ "HRK",
+    tournament.prizepool.currency == "Vietnamese Dong" ~ "VND",
+    tournament.prizepool.currency == "Icelandic Krona" ~ "ISK",
+    tournament.prizepool.currency == "Qatari Riyal" ~ "QAR",
+    tournament.prizepool.currency == "Mongolian Togrog" ~ "MNT",
+    tournament.prizepool.currency == "Ukrainian Hryvnia" ~ "UAH",
+    tournament.prizepool.currency == "Iranian Rial" ~ "IRR",
+    tournament.prizepool.currency == "South African Rand" ~ "ZAR",
+    tournament.prizepool.currency == "Serbian Dinar" ~ "RSD",
+    tournament.prizepool.currency == "Bulgarian Lev" ~ "BGN",
+    TRUE ~ tournament.prizepool.currency # Keep original value if no match.
+  )
+)
+```
+Next, I dealt with the historical exchange rates dataset, which needed to be reduced as its large size (407MB) slowed down transformations considerably. I removed all unnecessary currencies and standardized the dates to a consistent format using anytime(). Then, my supervisor used lubridate to remove all conversion rates from years outside our dataset (<2015).
+```
+# Separate currency abbreviaton from full name
+historical_exchange_rates <- separate(historical_exchange_rates, "CURRENCY:Currency", 
+into = c("currency_code", "currency_name"), sep = ":", extra = "merge")
+
+# Check if all currencies are supported. All are except Croatian Kuna.
+unique(historical_exchange_rates$currency_code)
+
+# This isn't really a huge deal though because only two rows contain prize money in Croatian Kuna.
+length(which(esport.data$tournament.prizepool.currencycode == "HRK"))
+
+# Remove HRK (Croatian Kuna) from esport.data as there is no conversion data for it
+esport.data <- esport.data %>%
+  filter(!(tournament.prizepool.currencycode == "HRK" & !is.na(tournament.prizepool.amount)))
+
+# Create a list of currency codes in esport.data
+valid_currency_codes <- c("USD", "CNY", "EUR", "BRL", "PLN", "INR", "SEK", "GBP", 
+                          "KZT", "RUB", "ARS", "NOK", "DKK", "CZK", "AUD", "CHF", 
+                          "TRY", "JPY", "HRK", "VND", "ISK", "QAR", "MNT", "UAH", 
+                          "IRR", "ZAR", "RSD", "BGN")
+
+# Filter historical_exchange_rates to keep only rows with currencies in this list
+filtered_exchange_rates <- historical_exchange_rates %>%
+  filter(currency_code %in% valid_currency_codes)
+
+# Convert the "begin_date" column to a Date object in esport.data
+esport.data$begin_date <- as.Date(esport.data$begin_date)
+
+# As date column in exchange rates dataset has inconsistent dates, use function to standardise format
+filtered_exchange_rates$consistent_date <- as.Date(anytime(filtered_exchange_rates$`TIME_PERIOD:Time period or range`))
+filtered_exchange_rates <- subset(filtered_exchange_rates,lubridate::year(consistent_date)>2015)
+```
+We then created a new dataset with only the necessary columns and merged it with the esports dataset to perform the conversion. The neatest part was the closest() argument in the merge function, which used the esport match date to get the closest available exchange rate for that date. This ensured the conversions were as accurate to the match time as possible.
+```
+# extract relevant columns
+exchange <- filtered_exchange_rates[c("currency_code","OBS_VALUE:Observation Value","consistent_date")]
+exchange <- exchange %>% rename(ObsValue=`OBS_VALUE:Observation Value`)
+exchange$ObsValue <- ifelse(exchange$ObsValue=="NaN",NA,exchange$ObsValue)
+exchange <- exchange %>% distinct(currency_code, consistent_date, .keep_all = TRUE)
+
+merged_data <- esport.data %>%
+  left_join(exchange, join_by("tournament.prizepool.currencycode" == "currency_code", closest(begin_date <= consistent_date)))
+
+# Make a column based on date diff calculation
+merged_data$date_diff <- difftime(merged_data$begin_date, merged_data$consistent_date, units = "days")
+
+# Check it worked properly, seems like it worked perfectly (max is 0 days, min is -25 days)
+max(na.omit(merged_data$date_diff))
+min(na.omit(merged_data$date_diff))
+
+# Convert prizepool amounts to USD using the exchange rates
+merged_data <- mutate(merged_data, prizepool_usd = tournament.prizepool.amount / ObsValue)
+```
+### GDP Per Capita
+
+Another consideration for tournament prize money was regarding GDP. CS:GO is massive on a global scale, with teams from all over the world competing in esports, and there are large disparities in economic standing between countries that might impact how they perceive a given amount of prize money. Getting GDP data for each team based on their location seemed wise, so we could adjust for GDP if needed.
+
+I acquired a GDP dataset from the International Monetary Fund (IMF) that contained yearly GDP values for over 200 countries. However, the issue with this GDP dataset was that it didn't have country codes but instead had country names. Unfortunately, the esports dataset only had country codes, so I first had to merge the GDP dataset with the exchange rates dataset (which had both codes and names) to acquire the country codes.
+```
+GDP_merge <- GDP_long %>% left_join(historical_exchange_rates, join_by("country_name", "year"), multiple = "any")
+
+GDP_merge <- GDP_merge[c("country_code", "country_name", "year", "GDP")]
+
+GDP_merge <- GDP_merge[!is.na(GDP_merge$country_code),]
+```
+I then merged the GDP dataset with the esports dataset. I performed two joins, one for each team within a game, and then integrated these two joins into a single dataset.
+```
+# Process merged esport.data
+merged_data$year <- format(as.Date(merged_data$begin_date, format ="%Y/%m/%d"), "%Y")
+
+# Merge
+main_GDP_merge <- merged_data %>%
+  left_join(GDP_merge, join_by("opponent_0.location" == "country_code", "year"), multiple = "any")
+
+main_GDP_merge <- main_GDP_merge %>% rename(
+  opp0_GDP = GDP, opp0_country_name = country_name, opp0_year = year
+)
+
+secondary_GDP_merge <- merged_data %>%
+  left_join(GDP_merge, join_by("opponent_1.location" == "country_code", "year"), multiple = "any")
+
+main_GDP_merge$opp1_year <- secondary_GDP_merge$year
+main_GDP_merge$opp1_country_name <- secondary_GDP_merge$country_name
+main_GDP_merge$opp1_GDP <- secondary_GDP_merge$GDP
+```
+After this the data transformation was essentially done!
+
+### Analysis
+
+A large portion of the analysis was done by my supervisor, who set up a new dataframe with cleaner column names and performed necessary preparations, such as calculating the win-rates for each team based on their previous game outcomes. All of this is available in the repo near the bottom of the `WLeffects.R` file if you're interested.
+
+We then ran a general linear mixed effects model to see if winning/losing previous games predicted the outcome of future games. For analysis, winner/loser effects were represented by "win/loss deviation"; this was calculated by subtracting a team's win rate (from 0-1) from 1 if they won the previous game, and 0 if they lost the previous game. The resulting value, ranging from -1 to 1, represented whether a team won (a deviation above 0) or lost (a deviation below 0) the previous game, relative to that team's average win-rate.
+
+We found a significant effect of this win/loss deviation (winner/loser effect) as hypothesized (p < .001). Though the specifics of the odds ratios are more complicated, we could essentially say that winning a previous game increased a team's odds of winning the current game by approximately 1.07. 
+
+![main winner/loser effect](./images/main_wl_effect.png)
+
+Interestingly, this had a significant interaction effect with prize money as well. Essentially, for every extra $1 of prize money, the influence of the winner/loser effect on the likelihood of a team winning the current game increased by 1.04.
+
+![prize money winner/loser effect interaction](./images/wl_money_interaction.png)
+
+## Conclusion
+
+This project was enjoyable, and I felt fortunate to have a great supervisor and an interesting topic to investigate and learn to code. It will be even more exciting when I transform this project into a full-fledged data pipeline...!
