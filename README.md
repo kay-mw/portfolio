@@ -9,9 +9,10 @@
 #### _Python_ | _SQL_ | _Azure_ | _Terraform_
 
 - Created a Python script that extracts user and site-wide anime data from the AniList GraphQL API.
-- Transformed this data into a usable format and performed basic analysis to identify the user's most "popular" and "unpopular" anime opinions.
-- Uploaded this data to an Azure SQL Database.
-- Created a basic web interface to facilitate this pipeline, including a page where users could enter their ID, and a dashboard page that displays their results.
+- Transformed this data using Pandas into a usable format and performed basic analysis to identify the user's most "popular" and "unpopular" anime opinions.
+- Incorporated data quality checks with Great Expectations.
+- Uploaded this data to an Azure SQL Database using SQLAlchemy. Selected a `MERGE` function to `INSERT` new records and `UPDATE` existing records.
+- Created a basic web interface using Flask and Jinja2 to facilitate this pipeline. Included a page where users could enter their ID, and a dashboard page that displays their results (see below).
 
 ![example_1](./images/firefox_4DIEhq58Ry.png)
 ![example_2](./images/g7GNO07zZA.png)
@@ -24,10 +25,9 @@
 
 #### _Python_ | _R_  
 
-- Extracted esports data from a REST API.
-- Transformed the data extensively, involving the integration of multiple other datasets (exchange rates, GDP per capita).
-- Analyzed using a general linear mixed effects model (GLMM).
-- Graphs below show the results.
+- Extracted esports data from a REST API using Python.
+- Transformed the data extensively, which included the integration and transformation of multiple other datasets (exchange rates, GDP per capita).
+- Analyzed data using a general linear mixed effects model (see results below).
 
 ![main winner/loser effect](./images/main_wl_effect.png)
 
