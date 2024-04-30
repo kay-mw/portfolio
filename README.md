@@ -30,7 +30,6 @@
 - Extracted 41,421 CS:GO matches from a REST API using Python.
 - Restructed the data to represent 91,551 individual games instead of matches.
 - Converted prize money amounts for over 40 different currencies using historical exchange rates.
-- Weighted prize money amounts based on the nationality of each team using GDP data for over 50 different countries.
 - Analyzed data using a general linear mixed effects model, and visualised data using ggplot and SJPlot (see below).
 
 ![main winner/loser effect](./images/main_wl_effect.png)
