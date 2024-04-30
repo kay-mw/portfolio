@@ -9,13 +9,15 @@
 #### _Python_ | _SQL_ | _Azure_ | _Terraform_
 
 - Created a Python script that extracts user and site-wide anime data from the AniList GraphQL API.
-- Transformed this data using Pandas into a usable format and performed basic analysis to identify the user's most "popular" and "unpopular" anime opinions.
+- Transformed the data using Pandas and performed analysis to identify the user's most "popular" and "unpopular" anime opinions.
 - Incorporated data quality checks with Great Expectations.
-- Uploaded this data to an Azure SQL Database using SQLAlchemy. Selected a `MERGE` function to `INSERT` new records and `UPDATE` existing records.
-- Created a basic web interface using Flask and Jinja2 to facilitate this pipeline. Included a page where users could enter their ID, and a dashboard page that displays their results (see below).
+- Deployed infrastructure to Azure using Terraform, then uploaded the data to an Azure SQL Database using SQLAlchemy. 
+- Structured tables using Kimball methodology.
+- Utilised a combination of `MERGE`, `UPDATE`, and `INSERT` statements to both add data for new users and update records of existing users.
+- Created a basic web interface using Flask and Jinja2 to facilitate the data pipeline (see below).
 
-![example_1](./images/firefox_4DIEhq58Ry.png)
-![example_2](./images/g7GNO07zZA.png)
+![home page](./images/home_page.png)
+![dashboard](./images/dashboard.png)
 
 # Project 2: The Impact of Winner and Loser Effects on eSports Competitions (Dissertation)
 
@@ -25,9 +27,11 @@
 
 #### _Python_ | _R_  
 
-- Extracted esports data from a REST API using Python.
-- Transformed the data extensively, which included the integration and transformation of multiple other datasets (exchange rates, GDP per capita).
-- Analyzed data using a general linear mixed effects model (see results below).
+- Extracted 41,421 CS:GO matches from a REST API using Python.
+- Restructed the data to represent 91,551 individual games instead of matches.
+- Converted prize money amounts for over 40 different currencies using historical exchange rates.
+- Weighted prize money amounts based on the nationality of each team using GDP data for over 50 different countries.
+- Analyzed data using a general linear mixed effects model, and visualised data using ggplot and SJPlot (see below).
 
 ![main winner/loser effect](./images/main_wl_effect.png)
 
