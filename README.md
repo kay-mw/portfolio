@@ -13,7 +13,7 @@ application that compares an individual's AniList data with site-wide trends.
 _Python_ | _SQL_ | _Dagster_ | _Github Actions_ | _Azure (SQL, Blob Storage)_ |
 _GCP (Cloud Run, Artifact Registry)_
 
-![Project Workflow](./media/pop_project_diagram.png)
+![Project Workflow](./media/pop.drawio.png)
 
 - **User Interaction**: Users enter their AniList username, triggering the
   backend to extract, clean, and store their public AniList data via the
@@ -34,12 +34,11 @@ _GCP (Cloud Run, Artifact Registry)_
   average.
 
 Explore the tool on the <a
-  href="https://www.anipop.uk" target="_blank">website</a>, or
-preview the features through the examples below.
+    href="https://www.anipop.uk" target="_blank">website</a> _**(hint: use "bob"
+as your username)**_, or preview the features through the examples below!
 
-![Taste Comparison Plot](./media/example_dash_plot.png)
-![Most Controversial and Least Controversial Take](./media/example_dash_anime.png)
-![Taste Message](./media/example_dash_msg.png)
+<img src="./media/plot.png" width="525" />
+<img src="./media/05_10_2024T17_56_02.png" width="275" />
 
 # [The Impact of Winner and Loser Effects on eSports Competitions (Dissertation)](https://github.com/kay-mw/esports_wleffects)
 
