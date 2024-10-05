@@ -13,7 +13,7 @@ application that compares an individual's AniList data with site-wide trends.
 _Python_ | _SQL_ | _Dagster_ | _Github Actions_ | _Azure (SQL, Blob Storage)_ |
 _GCP (Cloud Run, Artifact Registry)_
 
-![Project Workflow](./media/pop.drawio.png)
+![Project Workflow](./media/workflow.png)
 
 - **User Interaction**: Users enter their AniList username, triggering the
   backend to extract, clean, and store their public AniList data via the
@@ -38,7 +38,7 @@ Explore the tool on the <a
 as your username)**_, or preview the features through the examples below!
 
 <img src="./media/plot.png" width="525" />
-<img src="./media/05_10_2024T17_56_02.png" width="275" />
+<img src="./media/abs.png" width="275" />
 
 # [The Impact of Winner and Loser Effects on eSports Competitions (Dissertation)](https://github.com/kay-mw/esports_wleffects)
 
