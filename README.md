@@ -34,7 +34,7 @@ _GCP (Cloud Run, Artifact Registry)_
   average.
 
 Explore the tool on the <a
-  href="https://pop-tool-anilist-ftybdinz2q-nw.a.run.app/" target="_blank">website</a>, or
+  href="https://www.anipop.uk" target="_blank">website</a>, or
 preview the features through the examples below.
 
 ![Taste Comparison Plot](./media/example_dash_plot.png)
