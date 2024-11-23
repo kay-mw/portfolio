@@ -45,7 +45,7 @@ as your username)**_, or preview the features through the examples below!
 **_SQL_** | **_Python_** | **_Spark/Pyspark_** | **_AI_** | **_Big Data_** |
 **_Delta Lake_** | **_DuckDB_** | **_Polars_** | **_Plotly_**
 
-![bruh](./media/flow-chart.svg)
+![project flow chart](./media/flow-chart.svg)
 
 ## Overview
 
