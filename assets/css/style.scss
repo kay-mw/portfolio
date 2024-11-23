@@ -1,6 +1,6 @@
-@import "{{ site.theme }}"
+$body-text-color: #ffffff;
 
-$body-text-color: #ffffff
+@import "{{ site.theme }}";
 
 body {
   padding: 0;
